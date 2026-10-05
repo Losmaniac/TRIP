@@ -1,0 +1,17 @@
+{
+  "name": "Toskánsko 2026 – Moto Premium d’Italia",
+  "short_name": "Toskánsko",
+  "description": "Program, trasy, vozy, jídlo a kontakty pro účastníky Moto Premium d’Italia 2026. Funguje offline.",
+  "lang": "cs",
+  "start_url": "./#ted",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECEDE6",
+  "theme_color": "#223425",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

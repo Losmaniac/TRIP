@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toskánsko 2026</title>
+<meta name="description" content="Osobní průvodce účastníka Moto Premium d’Italia 2026 – program, trasy, vozy, jídlo a kontakty. Funguje i offline.">
+<meta name="theme-color" content="#223425">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Toskánsko">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..800;1,100,400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500..800;1,6..96,500..700&display=swap">
+<style>
+/* Layout: road-book app shell — one screen per tab, bottom tab bar, timelines read like rally pace notes. */
+:root {
+  --bg: #ECEDE6;          /* travertine */
+  --surface: #F8F8F3;
+  --surface-2: #E0E3D7;
+  --ink: #1B2119;         /* cypress black */
+  --muted: #5B6354;
+  --line: #CBD0C0;
+  --primary: #2E4A33;     /* cypress */
+  --on-primary: #F4F5EE;
+  --giallo: #E5A800;      /* giallo Modena */
+  --giallo-ink: #7E5A00;
+  --alert: #B3261E;
+  --g-yellow: #E3AE00;
+  --g-green: #3B8A47;
+  --g-red: #C3352A;
+  --route-1: #2E6B3B;
+  --route-2: #C47F00;
+  --on-photo: #FFFFFF;
+  --shadow: 0 1px 2px rgba(27,33,25,.08), 0 6px 20px rgba(27,33,25,.06);
+  --display: "Bodoni Moda", "Bodoni 72", Didot, "Times New Roman", Georgia, serif;
+  --sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F130E; --surface: #182016; --surface-2: #232C20; --ink: #E8EBE0; --muted: #9DA595;
+    --line: #2F392B; --primary: #93C28D; --on-primary: #0F130E; --giallo: #F2C230; --giallo-ink: #F2C230;
+    --alert: #FF7D70; --g-yellow: #F2C230; --g-green: #6CC07A; --g-red: #FF6E62;
+    --route-1: #7CC38A; --route-2: #F2B83A; --shadow: 0 1px 2px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F130E; --surface: #182016; --surface-2: #232C20; --ink: #E8EBE0; --muted: #9DA595;
+  --line: #2F392B; --primary: #93C28D; --on-primary: #0F130E; --giallo: #F2C230; --giallo-ink: #F2C230;
+  --alert: #FF7D70; --g-yellow: #F2C230; --g-green: #6CC07A; --g-red: #FF6E62;
+  --route-1: #7CC38A; --route-2: #F2B83A; --shadow: 0 1px 2px rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 15px/1.5 var(--sans); font-variation-settings: "wdth" 100;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+a { color: var(--primary); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--giallo); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ---------- shell ---------- */
+.app { max-width: 720px; margin: 0 auto; padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+.view { padding-inline: 16px; padding-block: 0 24px; display: grid; gap: 20px; }
+.view > * { min-width: 0; }
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 12px 16px 10px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.topbar h1 { font: 600 24px/1.1 var(--display); letter-spacing: -.01em; }
+.topbar .meta { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-variation-settings: "wdth" 80; }
+
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface); border-top: 1px solid var(--line);
+}
+.tabs ul { list-style: none; margin: 0 auto; padding: 0; max-width: 720px; display: grid; grid-template-columns: repeat(5, 1fr); }
+.tabs a {
+  display: grid; justify-items: center; gap: 2px; padding: 6px 0 4px;
+  text-decoration: none; color: var(--muted); font-size: 11px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; font-variation-settings: "wdth" 85; border-radius: 10px;
+}
+.tabs a svg { width: 24px; height: 24px; }
+.tabs a[aria-current="page"] { color: var(--primary); }
+.tabs a[aria-current="page"] svg { stroke-width: 2.2; }
+
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ---------- type helpers ---------- */
+.eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-variation-settings: "wdth" 80; }
+.section-title { font: 600 22px/1.2 var(--display); }
+.lede { color: var(--muted); max-width: 62ch; margin: 0; }
+p { margin: 0; }
+.prose { display: grid; gap: 10px; max-width: 65ch; }
+.prose p { color: var(--ink); }
+
+/* ---------- hero (Teď) ---------- */
+.hero {
+  position: relative; margin-inline: -16px; min-height: 300px; overflow: hidden;
+  display: grid; align-content: end; color: var(--on-photo);
+}
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,9,.05) 20%, rgba(10,14,9,.78) 100%); }
+.hero-body { position: relative; z-index: 1; padding: 64px 20px 22px; display: grid; gap: 6px; }
+.hero .kicker { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; font-variation-settings: "wdth" 80; opacity: .9; }
+.hero h1 { font: italic 600 clamp(34px, 9vw, 52px)/1 var(--display); letter-spacing: -.015em; }
+.hero .dates { font-size: 14px; opacity: .92; }
+
+/* ---------- status card ---------- */
+.status { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; margin-top: -36px; position: relative; z-index: 2; }
+.status-main { padding: 18px 18px 16px; display: grid; gap: 8px; }
+.status-label { display: flex; align-items: center; gap: 8px; }
+.live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--giallo); box-shadow: 0 0 0 0 var(--giallo); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--giallo) 60%, transparent); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } * { scroll-behavior: auto !important; } }
+.status h2 { font: 600 26px/1.15 var(--display); }
+.status .where { color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.big-count { font: 600 clamp(40px, 12vw, 60px)/1 var(--display); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.02em; }
+.big-count small { font: 600 16px/1 var(--sans); color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.progress { height: 4px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--giallo); border-radius: 4px; }
+.status-next { border-top: 1px solid var(--line); padding: 12px 18px; display: flex; gap: 12px; align-items: center; background: var(--surface); }
+.status-next .t { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 48px; }
+.status-next .in { margin-left: auto; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.note-strip { padding: 10px 18px; background: color-mix(in srgb, var(--giallo) 16%, var(--surface)); color: var(--ink); font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+.note-strip .ico { color: var(--giallo-ink); margin-top: 1px; }
+
+/* ---------- chips, pills ---------- */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 4px; margin-inline: -16px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 8px 14px; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline;
+}
+.chip small { color: var(--muted); font-weight: 500; font-size: 12px; }
+.chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.chip[aria-pressed="true"] small { color: inherit; opacity: .8; }
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-variation-settings: "wdth" 85; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.inc { color: var(--primary); }
+.pill.exc { color: var(--muted); }
+.pill.must { color: var(--alert); }
+.pill.gold { color: var(--giallo-ink); }
+
+/* ---------- day header ---------- */
+.dayhead { position: relative; border-radius: var(--r); overflow: hidden; min-height: 170px; display: grid; align-content: end; color: var(--on-photo); }
+.dayhead img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dayhead::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 25%, rgba(10,14,9,.75)); }
+.dayhead > div { position: relative; z-index: 1; padding: 16px; display: grid; gap: 4px; }
+.dayhead h2 { font: italic 600 30px/1.05 var(--display); }
+.dayhead .sub { font-size: 14px; opacity: .92; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.stat { display: grid; }
+.stat b { font: 600 20px/1.1 var(--display); font-variant-numeric: lining-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+
+/* ---------- timeline (road book) ---------- */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.tl { display: grid; grid-template-columns: 58px 28px 1fr; column-gap: 8px; position: relative; }
+.tl::before { content: ""; position: absolute; left: 79px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.tl:first-child::before { top: 18px; }
+.tl:last-child::before { bottom: calc(100% - 18px); }
+.tl .time { text-align: right; padding-top: 10px; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tl .time small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+.tl .node { position: relative; z-index: 1; width: 28px; height: 28px; margin-top: 6px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.tl .node .ico { width: 15px; height: 15px; stroke-width: 2; }
+.tl.stop .node { border-color: var(--primary); color: var(--primary); }
+.tl.past { opacity: .5; }
+.tl.now .node { background: var(--giallo); border-color: var(--giallo); color: #1B2119; }
+.tl.now .card { box-shadow: 0 0 0 2px var(--giallo); }
+.tl .body { padding: 4px 0 12px; min-width: 0; }
+.card { background: var(--surface); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+.card > summary, .card .head { list-style: none; cursor: pointer; display: grid; gap: 2px; }
+.card > summary::-webkit-details-marker { display: none; }
+.card h3 { font-size: 16px; font-weight: 700; line-height: 1.3; font-variation-settings: "wdth" 96; }
+.card .place { color: var(--muted); font-size: 13.5px; }
+.card .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.card .more { display: grid; gap: 10px; padding-top: 6px; }
+.card .more img { border-radius: 10px; aspect-ratio: 16/9; object-fit: cover; width: 100%; }
+.card[open] .chev { transform: rotate(180deg); }
+.chev { transition: transform .2s; color: var(--muted); }
+.card .sumrow { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.stopno { font: italic 600 15px/1 var(--display); color: var(--primary); }
+
+.linkbtn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; border: 0; cursor: pointer; }
+.linkbtn.primary { background: var(--primary); color: var(--on-primary); }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- menu ---------- */
+.menu { display: grid; gap: 4px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
+.menu .mt { font: italic 600 15px/1.3 var(--display); }
+.menu ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 14px; }
+.menu li::marker { color: var(--muted); }
+
+/* ---------- blocks ---------- */
+.block { background: var(--surface); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; }
+.block.flat { background: transparent; padding: 0; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; }
+.list > li { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.list > li:first-child { border-top: 0; }
+.list .t { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 46px; }
+.list .grow { flex: 1; min-width: 0; }
+.list .sub { color: var(--muted); font-size: 13px; }
+.list li.past { opacity: .45; }
+
+/* weather */
+.wx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.wx > div { background: var(--surface); border-radius: 12px; padding: 10px 8px; display: grid; justify-items: center; gap: 2px; text-align: center; }
+.wx .d { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variation-settings: "wdth" 80; }
+.wx .ico { width: 28px; height: 28px; color: var(--giallo-ink); }
+.wx .tt { font-weight: 700; font-variant-numeric: tabular-nums; }
+.wx .pp { font-size: 12px; color: var(--muted); }
+
+/* ---------- accordion (info) ---------- */
+.acc { background: var(--surface); border-radius: var(--r); }
+.acc > summary { list-style: none; cursor: pointer; padding: 16px; display: flex; gap: 12px; align-items: center; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc > summary h2 { font: 600 19px/1.2 var(--display); flex: 1; }
+.acc > summary .ico { color: var(--primary); }
+.acc[open] > summary .chev { transform: rotate(180deg); }
+.acc .inner { padding: 0 16px 16px; display: grid; gap: 14px; }
+.acc h3 { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-variation-settings: "wdth" 80; }
+
+.contact { display: grid; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
+.contact:first-of-type { border-top: 0; padding-top: 0; }
+.contact .who { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.contact .name { font-weight: 700; font-size: 16px; }
+.contact .role { color: var(--muted); font-size: 13px; }
+.contact .num { font-variant-numeric: tabular-nums; user-select: all; font-size: 15px; }
+
+.check { list-style: none; margin: 0; padding: 0; display: grid; }
+.check li { border-top: 1px solid var(--line); }
+.check li:first-child { border-top: 0; }
+.check label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--primary); flex: none; margin: 1px 0 0; }
+.check input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+
+.rules { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.rules li::marker { color: var(--primary); font-weight: 700; }
+.callout { border-left: 3px solid var(--alert); padding: 8px 12px; background: color-mix(in srgb, var(--alert) 8%, var(--surface)); border-radius: 0 10px 10px 0; display: grid; gap: 4px; }
+.callout b { color: var(--alert); }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gallery img { aspect-ratio: 1; object-fit: cover; border-radius: 8px; width: 100%; }
+.dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+.dl dt { color: var(--muted); font-size: 13.5px; }
+.dl dd { margin: 0; font-weight: 600; }
+.glossary { display: grid; gap: 10px; margin: 0; }
+.glossary dt { font: italic 600 16px/1.2 var(--display); }
+.glossary dd { margin: 2px 0 0; color: var(--ink); font-size: 14.5px; }
+.phrase { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 14.5px; }
+.phrase b { font: italic 600 16px/1.3 var(--display); }
+
+/* ---------- cars ---------- */
+.garage { display: flex; gap: 16px; align-items: center; }
+.ring { width: 76px; height: 76px; flex: none; }
+.ring circle { fill: none; stroke-width: 8; }
+.ring .bgc { stroke: var(--surface-2); }
+.ring .fgc { stroke: var(--giallo); stroke-linecap: round; transition: stroke-dashoffset .4s; }
+.ring text { fill: var(--ink); font: 600 22px var(--display); }
+.groups { display: grid; gap: 10px; }
+.grp { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.grp > span { min-width: 64px; font-weight: 600; }
+.swatch { border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px 6px 8px; display: inline-flex; gap: 6px; align-items: center; cursor: pointer; font-weight: 600; font-size: 14px; }
+.swatch i { width: 14px; height: 14px; border-radius: 50%; display: block; }
+.swatch[aria-pressed="true"] { border-color: var(--ink); }
+.cars { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.car { background: var(--surface); border-radius: var(--r); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.car .ph { position: relative; background: #1d1f1e; }
+.car .ph img { width: 100%; aspect-ratio: 3/2; object-fit: cover; }
+.car .flags { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; }
+.car .flags span { background: rgba(10,14,9,.7); color: var(--on-photo); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; font-variation-settings: "wdth" 85; }
+.car .cb { padding: 12px 14px 14px; display: grid; gap: 10px; align-content: start; }
+.car h3 { font: 600 20px/1.15 var(--display); }
+.specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.specs div { background: var(--surface-2); border-radius: 8px; padding: 6px 8px; display: grid; }
+.specs b { font-variant-numeric: tabular-nums; font-size: 15px; }
+.specs span { font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; font-variation-settings: "wdth" 85; }
+.car details summary { cursor: pointer; color: var(--primary); font-weight: 600; font-size: 14px; }
+.car details p { font-size: 14.5px; margin-top: 8px; }
+.car .acts { display: flex; gap: 8px; }
+.toggle { flex: 1; border: 1px solid var(--line); background: transparent; border-radius: 10px; padding: 9px 10px; font-weight: 600; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; cursor: pointer; }
+.toggle[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.toggle.fav[aria-pressed="true"] { background: var(--giallo); border-color: var(--giallo); color: #1B2119; }
+.toggle.fav { flex: none; }
+.car.driven .ph::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--giallo); }
+
+/* ---------- map ---------- */
+.mapwrap { background: var(--surface); border-radius: var(--r); overflow: hidden; }
+.mapwrap svg.map { width: 100%; height: auto; display: block; touch-action: manipulation; }
+.map-bg { fill: var(--surface); }
+.map-grid { stroke: var(--line); stroke-width: .5; }
+.region { font: italic 500 14px var(--display); fill: var(--muted); opacity: .75; }
+.route { fill: none; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.route.d0, .route.d3 { stroke: var(--muted); stroke-dasharray: 5 6; stroke-width: 2.2; }
+.route.d1 { stroke: var(--route-1); }
+.route.d2 { stroke: var(--route-2); }
+.route.dim { opacity: .12; }
+.pt { cursor: pointer; }
+.pt .hit { fill: transparent; stroke: none; }
+.pt.stop circle:not(.hit) { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.pt.stop.d1 circle:not(.hit) { fill: var(--route-1); stroke: var(--surface); }
+.pt.stop.d2 circle:not(.hit) { fill: var(--route-2); stroke: var(--surface); }
+.pt.home circle:not(.hit) { fill: var(--giallo); stroke: var(--ink); stroke-width: 2; }
+.pt .mk { font: 700 11px var(--sans); fill: var(--surface); pointer-events: none; }
+.pt.ref circle { fill: var(--muted); }
+.pt text.lbl, .pt.ref text { font: 600 11px var(--sans); fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.pt.ref text { font-weight: 500; fill: var(--muted); }
+.pt.ref { cursor: default; }
+.pt.sel circle:not(.hit) { stroke: var(--ink); stroke-width: 3; }
+.pt.dim { opacity: .2; }
+.map-ui { fill: var(--muted); font: 600 10px var(--sans); }
+.map-ui-line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.places li { cursor: pointer; border-radius: 10px; }
+.places li.sel { background: color-mix(in srgb, var(--giallo) 14%, transparent); margin-inline: -8px; padding-inline: 8px; }
+.mkb { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; background: var(--surface-2); color: var(--ink); }
+.mkb .ico { width: 15px; height: 15px; }
+.mkb.home { background: var(--giallo); color: #1B2119; }
+.mkb.d1 { background: var(--route-1); color: var(--surface); }
+.mkb.d2 { background: var(--route-2); color: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+textarea, input[type="datetime-local"] { width: 100%; font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+textarea { min-height: 96px; resize: vertical; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.switch input { width: 44px; height: 26px; accent-color: var(--primary); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.foot { text-align: center; color: var(--muted); font-size: 12.5px; padding: 8px 0 4px; }
+.sim-banner { position: sticky; top: 0; z-index: 20; background: var(--giallo); color: #1B2119; font-size: 13px; font-weight: 600; text-align: center; padding: 6px 12px; }
+.sim-banner button { background: transparent; border: 1px solid currentColor; border-radius: 999px; padding: 1px 10px; margin-left: 8px; cursor: pointer; font-weight: 700; }
+.install { display: grid; gap: 8px; }
+.toast { position: fixed; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 30; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-now" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4Z"/><path d="M9 4v14M15 6v14"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="M3 15.5v-2.2c0-.8.4-1.5 1.1-1.8L7 10l2-3.2c.3-.5.9-.8 1.5-.8h4.2c.6 0 1.2.3 1.5.8L18 10l2.4 1c.9.4 1.6 1.2 1.6 2.2v2.3"/><circle cx="7" cy="16" r="2"/><circle cx="17" cy="16" r="2"/><path d="M9 16h6M3 16h2M19 16h2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M2.5 13.5 21 7.5c.8-.3 1.3.8.6 1.3L14 14l-1 6.5-2.5 1-1-6-5 1.5-2-3.5Z"/></symbol>
+    <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="14" rx="2.5"/><path d="M4 11h16M7 17.5V20M17 17.5V20"/><circle cx="8" cy="14.5" r=".6"/><circle cx="16" cy="14.5" r=".6"/></symbol>
+    <symbol id="i-food" viewBox="0 0 24 24"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1-3 4-3 7h3"/></symbol>
+    <symbol id="i-wine" viewBox="0 0 24 24"><path d="M8 3h8l-.5 6a3.5 3.5 0 0 1-7 0L8 3ZM12 12.5V20M8.5 20.5h7"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9ZM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v3M12 3v3"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6 0-3.8 3.5-5.8 4-10 2.5 1.6 3.8 4 3.5 6.5 1-.6 1.8-1.7 2-3 1.8 1.6 3.5 4 3.5 6.5 0 3.4-2.6 6-6.5 6Z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-1.5 4L16 12H5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.5-6.5-11a6.5 6.5 0 0 1 13 0c0 5.5-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="m10 21 2-6 3 3v3M8 12l2.5-4.5 3.5 1 2 3.5M12 15l-1.5-6"/></symbol>
+    <symbol id="i-fuel" viewBox="0 0 24 24"><path d="M4 20V5a1.5 1.5 0 0 1 1.5-1.5h7A1.5 1.5 0 0 1 14 5v15M3 20h12M4 10h10M14 8l3 2.5V17a1.5 1.5 0 0 0 3 0V8l-2.5-2.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5M12 17.5v.01"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7.5h3.5L9 5h6l1.5 2.5H20v11H4v-11Z"/><circle cx="12" cy="13" r="3.3"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11.5" r="2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18 9.5a4.5 4.5 0 0 1-.5 9H7Z"/></symbol>
+    <symbol id="i-psun" viewBox="0 0 24 24"><path d="M8.5 4.5v1.2M3.5 9.5h1.2M5 6l.8.8M12 6l-.8.8"/><path d="M5.6 11.5A3.5 3.5 0 0 1 11.8 8"/><path d="M9 20a4 4 0 0 1-.3-8 5 5 0 0 1 9.6 1.3A3.4 3.4 0 0 1 18 20H9Z"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 15a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18 6a4.5 4.5 0 0 1-.5 9H7Z"/><path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/></symbol>
+    <symbol id="i-storm" viewBox="0 0 24 24"><path d="M7 15a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18 6a4.5 4.5 0 0 1-.5 9H7Z"/><path d="m12.5 14-2 3.5h3l-2 3.5"/></symbol>
+    <symbol id="i-fog" viewBox="0 0 24 24"><path d="M4 9h16M3 13h18M5 17h14"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 3.5h3.5l1.5 4.5-2.2 1.4a11 11 0 0 0 6.8 6.8L16 14l4.5 1.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.1 1.5 1.5 0 0 1 5 3.5Z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19l-4 1Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8L12 3.5Z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6L12 3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></symbol>
+  </defs>
+</svg>
+
+<div id="sim" class="sim-banner" hidden></div>
+<main class="app" id="app"></main>
+
+<nav class="tabs" aria-label="Hlavní navigace">
+  <ul>
+    <li><a href="#ted" data-tab="ted"><svg class="ico"><use href="#i-now"/></svg>Teď</a></li>
+    <li><a href="#program" data-tab="program"><svg class="ico"><use href="#i-cal"/></svg>Program</a></li>
+    <li><a href="#mapa" data-tab="mapa"><svg class="ico"><use href="#i-map"/></svg>Mapa</a></li>
+    <li><a href="#vozy" data-tab="vozy"><svg class="ico"><use href="#i-car"/></svg>Vozy</a></li>
+    <li><a href="#info" data-tab="info"><svg class="ico"><use href="#i-info"/></svg>Info</a></li>
+  </ul>
+</nav>
+
+<script>
+"use strict";
+/* =====================================================================
+   DATA — z Info Sheetu 05 (program, časy, kontakty), Informačního balíčku
+   (pravidla, jídelníček, vozy) a Event Booku (popisy míst a vozů).
+   Info Sheet je nejnovější, proto má přednost.
+   ===================================================================== */
+const OFFSET = "+02:00"; // Itálie i Česko: letní čas (CEST) až do 25. 10.
+const VILLA_Q = "Villa Boscarello, Trequanda, Siena";
+
+const DAYS = [
+  { id: "d0", date: "2026-10-08", short: "Příjezd", title: "Den příjezdu", img: "img/villa-hill.jpg",
+    sub: "Florencie · Monteriggioni · Villa Boscarello",
+    stats: [["120 km", "transfer"], ["2 h 25 min", "jízda autobusem"], ["16:30", "příjezd do vily"]] },
+  { id: "d1", date: "2026-10-09", short: "Trasa 1", title: "Den 1 · Trasa 1", img: "img/montalcino.jpg",
+    sub: "Crete Senesi · Buonconvento · Montalcino · Bagno Vignoni",
+    stats: [["150 km", "trasa"], ["6 h", "na cestě"], ["4", "vozy na řízení"]],
+    highlights: [
+      "Klikaté silnice přes zvlněnou pahorkatinu Crete Senesi a napojení na římskou Via Cassia",
+      "Dlouhý sjezd lesem do Buonconventa, pak stoupání do Montalcina (+420 m)",
+      "Vinice Brunella a výhled k sopce Monte Amiata, náhorní plošina na východ",
+      "Zpět přes Val d’Orcia s viadukty a klikaté stoupání k opatství Monte Oliveto"
+    ] },
+  { id: "d2", date: "2026-10-10", short: "Trasa 2", title: "Den 2 · Trasa 2", img: "img/pienza.jpg",
+    sub: "San Quirico d’Orcia · Pienza · Montepulciano · Asciano",
+    stats: [["150 km", "trasa"], ["až 6,5 h", "na cestě"], ["4", "další vozy"]],
+    highlights: [
+      "Přejezd hřebene nad San Quirico d’Orcia, přehledné světlé svahy",
+      "Panoramatické stoupání k Pienze, známé z filmu Pod toskánským sluncem",
+      "Cypřišová alej ke kostelu San Biagio pod Montepulcianem",
+      "Lesní úsek se sériemi zatáček, olivové háje u Sinalungy",
+      "Na závěr vyhlídková silnice směrem k Sieně, projetá tam i zpět"
+    ] },
+  { id: "d3", date: "2026-10-11", short: "Odjezd", title: "Den odjezdu", img: "img/aerial-road.jpg",
+    sub: "Villa Boscarello · The Mall Firenze · Florencie",
+    stats: [["118 km", "transfer"], ["2 h 10 min", "jízda autobusem"], ["18:45", "odlet"]] }
+];
+
+/* k = ikona, s/e = začátek/konec (e chybí → do začátku dalšího bodu), disp = zobrazený čas */
+const ITEMS = [
+  // ---------- Den příjezdu ----------
+  { d: "d0", s: "09:10", e: "10:45", k: "plane", t: "Let Praha → Florencie", p: "přímý let",
+    n: "Přistání v 10:45 na letišti Florencie (Peretola)." },
+  { d: "d0", s: "11:25", e: "11:45", k: "pin", t: "Setkání s hostitelkou", p: "příletový terminál",
+    n: "Hostitelka čeká s logem. Při zpoždění letu je setkání 40 min po přistání.", q: "Aeroporto di Firenze Peretola" },
+  { d: "d0", s: "11:45", e: "12:40", k: "bus", t: "Transfer do Toskánska", p: "120 km · 2 h 25 min jízdy",
+    n: "Celkem 120 km autobusem s jednou zastávkou po cestě." },
+  { d: "d0", s: "12:40", e: "14:50", disp: "cca 12:40", k: "walk", stop: 1, t: "Monteriggioni", p: "středověká pevnost na kopci",
+    n: "Krásné výhledy, k dispozici bary a toalety (nejsou v ceně). Návštěva cca 2 h 10 min.",
+    x: "Opevněné městečko s kompletním věncem hradeb a věží, jedno z nejpůsobivějších v okolí Sieny. Více informací dá hostitelka po příjezdu.",
+    img: "img/borgo.jpg", q: "Monteriggioni", tags: [["exc", "útrata mimo cenu"]] },
+  { d: "d0", s: "14:50", e: "16:30", k: "bus", t: "Pokračování do vily", p: "Crete Senesi" },
+  { d: "d0", s: "16:30", e: "18:30", k: "bed", t: "Příjezd a ubytování", p: "recepce Villa Boscarello",
+    n: "Ubytování zajišťuje hostitelka. Pokoje se společnou manželskou postelí, vlastní koupelnou a klimatizací.",
+    img: "img/villa.jpg", q: VILLA_Q },
+  { d: "d0", s: "18:30", e: "19:00", k: "wine", stop: 1, t: "Přivítání a degustace", p: "jídelna",
+    n: "Přivítání majitelem vily, uvítací nápoj. Degustace Prosciutto Cinta Senese D.O.P.",
+    x: "Šunka z místního strakatého plemene prasat Cinta Senese – dlouho zrající, tradiční řemeslný produkt s historií. Nejlíp chutná s nesoleným chlebem pane sciocco.",
+    img: "img/prosciutto.jpg" },
+  { d: "d0", s: "19:00", e: "20:00", k: "alert", t: "Instruktáž řidičů", p: "místnost s krbem (salon)",
+    n: "Povinná pro řidiče. Kdo chce během akce řídit, musí být přítomen po celou dobu – dodatečná instruktáž není možná. Účast se potvrzuje podpisem.",
+    x: "Při instruktáži se losují skupiny vozů (žlutá, zelená, červená) pro oba dny i pořadí vozů ve skupině. Výsledek si můžete uložit v záložce Vozy.",
+    tags: [["must", "povinné pro řidiče"]], hl: 1 },
+  { d: "d0", s: "20:00", e: "21:45", k: "food", t: "Uvítací večeře", p: "jídelna, nebo venku podle počasí", menu: "d0-dinner" },
+  { d: "d0", s: "21:45", e: "23:59", disp: "po večeři", k: "flame", t: "Posezení u krbu", p: "místnost s krbem",
+    n: "Občerstvení a víno. Po 23:00 prosím ztište hovory a hudbu. Pijte střídmě – ráno čeká dechová zkouška 0,0 ‰." },
+
+  // ---------- Den 1 ----------
+  { d: "d1", s: "07:40", e: "08:30", k: "coffee", t: "Snídaně", p: "jídelna ve vile",
+    n: "Bufet; káva (cappuccino, espresso, americano) se objednává individuálně.", menu: "breakfast" },
+  { d: "d1", s: "08:45", e: "09:00", k: "car", t: "Sraz u vozů + dechová zkouška", p: "parkoviště před vilou",
+    n: "Oblečení na celé dopoledne, čepice do kabrioletu, řidičák v kapse. Přijďte včas! Pro řízení platí jen 0,0 ‰.",
+    tags: [["must", "0,0 ‰"]], hl: 1 },
+  { d: "d1", s: "09:00", k: "flag", t: "Start trasy 1", p: "150 km · cca 6 h",
+    n: "Skupina jede za vodicím vozem (Pace Car) a je v rádiovém spojení. Každá zastávka = výměna vozů." },
+  { d: "d1", s: "09:50", k: "coffee", stop: 1, t: "Agriturismo Pulcianese", p: "po cestě",
+    n: "Krátká zastávka na kávu (cca 15 min), první výměna vozů.",
+    x: "Agroturistická usedlost na svahu – typický toskánský způsob ubytování. Čerstvě mletá domácí káva a první sdílení dojmů z řízení.",
+    img: "img/hills.jpg", q: "Agriturismo Pulcianese", tags: [["inc", "v ceně"]] },
+  { d: "d1", s: "10:50", k: "wine", stop: 2, t: "Cantina di Montalcino", p: "u Montalcina",
+    n: "Prohlídka vinařství s průvodcem. Řiďte se pokyny a vraťte se k vozům včas.",
+    x: "Moderní architektura zasazená do krajiny s panoramatem Montalcina na kopci. Vinař provede sklepy, kde zraje Riserva, a vysvětlí, čím se Brunello di Montalcino liší od Chianti.",
+    img: "img/cantina.jpg", q: "Cantina di Montalcino", tags: [["inc", "v ceně"]] },
+  { d: "d1", s: "13:00", k: "walk", stop: 3, t: "Bagno Vignoni", p: "městečko s termálními prameny",
+    n: "Procházka a volno na bary a zmrzlinu (útrata mimo cenu). Vraťte se na parkoviště včas.",
+    x: "Místo náměstí je tu rozlehlá kamenná nádrž s termální vodou z podzemí, obklopená renesančními domy. Nad vodou stoupá pára – ideální foto. Kolem jsou pozůstatky historických lázní s výhledy do Val d’Orcia.",
+    img: "img/bagno-vignoni.jpg", q: "Bagno Vignoni", tags: [["exc", "útrata mimo cenu"]] },
+  { d: "d1", s: "15:00", e: "16:00", k: "food", t: "Konec trasy 1 a oběd", p: "Villa Boscarello, jídelna nebo venku", menu: "d1-lunch" },
+  { d: "d1", s: "15:50", e: "16:05", disp: "po obědě", k: "camera", t: "Společná fotografie", p: "před vilou",
+    n: "Za špatného počasí vybere fotografický tým jiné místo." },
+  { d: "d1", s: "16:05", e: "17:00", disp: "16:00", k: "sun", t: "Volný čas", p: "vila, zahrada, bazén (nevyhřívaný)" },
+  { d: "d1", s: "17:00", e: "17:15", k: "bus", t: "Sraz na exkurzi", p: "u autobusu na konci cypřišové aleje" },
+  { d: "d1", s: "17:15", e: "18:30", k: "wine", stop: 1, t: "Fattoria del Colle – olivový olej", p: "6 km autobusem",
+    n: "Výrobce olivového oleje a vína: tradiční farma, oceňované produkty, degustace.",
+    x: "Usedlost s vinicí a olivovým hájem patří po staletí stejné rodině. V historických budovách zrají v dubových sudech Chianti. V říjnu se lisuje olio nuovo – intenzivně zelený, pikantní a jemně hořký.",
+    img: "img/oil.jpg", q: "Fattoria del Colle Trequanda", tags: [["inc", "v ceně"]] },
+  { d: "d1", s: "18:30", e: "18:40", k: "bus", t: "Transfer zpět do vily", p: "6 km" },
+  { d: "d1", s: "19:00", e: "20:00", k: "sun", t: "Volný čas" },
+  { d: "d1", s: "20:00", e: "21:45", k: "food", t: "Večeře – večer s pizzou", p: "jídelna nebo venku", menu: "d1-dinner" },
+  { d: "d1", s: "21:45", e: "23:59", disp: "po večeři", k: "flame", t: "Posezení u krbu", p: "salon",
+    n: "Občerstvení a víno. Ráno opět dechová zkouška – pijte střídmě." },
+
+  // ---------- Den 2 ----------
+  { d: "d2", s: "07:40", e: "08:30", k: "coffee", t: "Snídaně", p: "jídelna ve vile", n: "Bufet.", menu: "breakfast" },
+  { d: "d2", s: "08:45", e: "09:00", k: "car", t: "Sraz u vozů + dechová zkouška", p: "parkoviště před vilou",
+    n: "Dnes jiná skupina vozů než včera. Čepice do kabrioletu, řidičák. Pro řízení platí jen 0,0 ‰.",
+    tags: [["must", "0,0 ‰"]], hl: 1 },
+  { d: "d2", s: "09:00", k: "flag", t: "Start trasy 2", p: "150 km · až 6,5 h" },
+  { d: "d2", s: "09:15", e: "09:30", k: "fuel", t: "Čerpací stanice", p: "San Giovanni d’Asso",
+    n: "Tankování – posádky zůstávají ve vozech.", q: "San Giovanni d'Asso" },
+  { d: "d2", s: "09:50", k: "coffee", stop: 1, t: "Mulino Val d’Orcia", p: "u San Quirico d’Orcia",
+    n: "20 minut na kávu a koláč crostata, výměna vozů.",
+    x: "Tradiční řemeslný mlýn s obchodem místních specialit, pekárnou a cukrárnou. Sousedí s opevněnou stavbou připomínající hrad. Prodávají i kvalitní mouku na chléb a pizzu.",
+    img: "img/mulino.jpg", q: "Mulino Val d'Orcia San Quirico", tags: [["inc", "v ceně"]] },
+  { d: "d2", s: "11:00", k: "walk", stop: 2, t: "Montepulciano", p: "město, vinařství, vyhlídka",
+    n: "Od kostela San Biagio elektrickým minibusem na hlavní náměstí. Procházka, katedrála, sklepy vinařství Talosa, káva s výhledem. Víc než hodina.",
+    x: "Město na úzkém hřebeni nad Val di Chiana, domov Vino Nobile di Montepulciano. Komentovaná prohlídka historických podzemních sklepů vinařství Talosa. Auta zůstávají pod městem.",
+    img: "img/montepulciano.jpg", q: "Montepulciano", tags: [["inc", "v ceně"]] },
+  { d: "d2", s: "13:30", k: "food", stop: 3, t: "Asciano – bar u Marca", p: "typický italský bar",
+    n: "Místní uzeniny a sýry, nápoje – v ceně. Pak vyhlídková silnice k Sieně a zpět.",
+    x: "Jednoduchý, neokázalý bar plný tradice. Provozuje ho Marco, přítel pořadatelů – na chvíli budete místní štamgasti, ne turisti.",
+    img: "img/street.jpg", q: "Asciano", tags: [["inc", "v ceně"]] },
+  { d: "d2", s: "15:00", e: "15:15", k: "flag", t: "Konec trasy 2", p: "Villa Boscarello", n: "Konec jízd. Od teď se víno podává ve větším množství." },
+  { d: "d2", s: "15:15", e: "16:30", k: "food", t: "Oběd s černým lanýžem", p: "jídelna nebo venku", menu: "d2-lunch" },
+  { d: "d2", s: "16:30", e: "20:00", disp: "do 20:00", k: "sun", t: "Volný čas",
+    n: "Tip: bazén, terasa s výhledem na Monte Amiata, nebo procházka k Ville La Selva (farmářský obchod, pokud otevření potvrdí koordinátor)." },
+  { d: "d2", s: "20:00", e: "21:45", k: "food", t: "Grilovací večer", p: "jídelna nebo venku", menu: "d2-dinner" },
+  { d: "d2", s: "21:45", e: "23:59", disp: "po večeři", k: "flame", t: "Večer u krbu", p: "salon",
+    n: "Bar s výběrem lihovin – první porce v ceně, další se platí individuálně." },
+
+  // ---------- Den odjezdu ----------
+  { d: "d3", s: "08:30", e: "09:15", k: "coffee", t: "Snídaně", p: "jídelna ve vile", n: "Bufet.", menu: "breakfast" },
+  { d: "d3", s: "09:30", e: "10:00", k: "bed", t: "Odhlášení", p: "recepce vily",
+    n: "Uhraďte vlastní objednávky (nápoje navíc, služby personálu).", hl: 1 },
+  { d: "d3", s: "10:30", e: "11:00", k: "bag", t: "Sraz u autobusu, naložení zavazadel", p: "konec cypřišové aleje",
+    n: "Přijďte včas!", tags: [["must", "včas"]] },
+  { d: "d3", s: "11:00", e: "12:45", k: "bus", t: "Transfer", p: "118 km · 2 h 10 min jízdy" },
+  { d: "d3", s: "12:45", e: "15:45", disp: "cca 12:45", k: "bag", stop: 1, t: "The Mall Firenze", p: "outlet v Lecciu · cca 3 h",
+    n: "Možnost nákupů a občerstvení. Přesný čas odjezdu řekne koordinátor.", q: "The Mall Firenze Leccio" },
+  { d: "d3", s: "16:45", e: "18:45", k: "plane", t: "Příjezd na letiště", p: "Florencie · 2 h před odletem", q: "Aeroporto di Firenze Peretola" },
+  { d: "d3", s: "18:45", e: "20:20", k: "plane", t: "Let Florencie → Praha", p: "přímý let · přistání 20:20" }
+];
+
+const MENUS = {
+  "breakfast": { title: "Snídaně – kontinentální bufet",
+    std: ["Mléko, čaj, džusy, voda, čerstvé sezónní ovoce", "Čerstvý chléb, croissanty, domácí koláče, cereálie, jogurt", "Džemy, Nutella, med, máslo", "Prosciutto, salám, toskánské sýry, vejce natvrdo", "Z kuchyně: míchaná a smažená vejce, omelety, palačinky", "Cappuccino, espresso, americano"] },
+  "d0-dinner": { title: "Toskánská večeře",
+    std: ["Tatarák z hovězího Chianina, křepelčí vejce, květ kapary, balzamiková redukce", "Domácí tortello, omáčka z pecorina a mák", "Filet mignon z hovězího Chianina, pyré ze šalotky a brambor, grilovaná mrkev", "Domácí cantucci s vínem Vin Santo", "Pitná voda, káva nebo čaj na vyžádání"],
+    veg: ["Suflé z černé kapusty, strouhané pecorino romano, křupavá paprika peperone crusco", "Domácí vegetariánské tortello, omáčka z pecorina a mák", "Špenátové gnudi s černým lanýžem", "Domácí cantucci s vínem Vin Santo", "Pitná voda, káva nebo čaj na vyžádání"] },
+  "d1-lunch": { title: "Oběd",
+    std: ["Tagliatelle s hříbky", "Filet mignon z vepřového Cinta Senese, černá kapusta, pečené sladké papriky", "Panna cotta s omáčkou z lesních plodů", "Víno, pitná voda, káva nebo čaj na vyžádání"],
+    veg: ["Dýňové rizoto, solená ricotta, plátky cibule a balzamiková redukce", "Roláda z plátků cukety, pečené plátky brambor a smažené hříbky", "Klasické tiramisu"] },
+  "d1-dinner": { title: "Večer s pizzou",
+    std: ["Pizza", "Saláty, zmrzlina, stolní víno", "Pitná voda, káva nebo čaj na vyžádání"],
+    veg: ["Výběr pizz: margherita, čtyři sýry, rukola s cherry rajčaty a mini mozzarellou, kozí sýr s dýní", "Saláty, zmrzlina, stolní víno", "Pitná voda, káva nebo čaj na vyžádání"] },
+  "d2-lunch": { title: "Oběd – černé lanýže z vlastního sběru",
+    std: ["Rizoto s černým lanýžem", "Plátky králičí porchetty s vlastní omáčkou, pečené plátky brambor a cuketa", "Klasické tiramisu", "Víno, pitná voda, káva nebo čaj na vyžádání"],
+    veg: ["Tagliatelle s hříbky", "Vrstvená lilková parmigiana se sezónní zeleninou", "Panna cotta s omáčkou z lesních plodů", "Víno, pitná voda, káva nebo čaj na vyžádání"] },
+  "d2-dinner": { title: "Grilovací večer",
+    std: ["Výběr grilovaných mas včetně hovězího filet mignon Chianina s černým lanýžem", "Přílohy: sezónní salát, pečené brambory, zapečený fenykl s bešamelem", "Víno, pitná voda, káva nebo čaj na vyžádání"],
+    veg: ["Výběr toskánských předkrmů ve vegetariánské verzi", "Grilovaný výběr: zelenina, cizrnový burger, ryba", "Přílohy: sezónní salát, pečené brambory, zapečený fenykl s bešamelem", "Torta della nonna", "Víno, pitná voda, káva nebo čaj na vyžádání"] }
+};
+
+const CARS = [
+  { id: "alfa-4c", name: "Alfa Romeo 4C Spider", body: "dvoumístný spider", engine: "1,75 l R4 turbo", hp: 240, drive: "zadní", acc: "4,5", top: 258, open: 1,
+    d: "Lehký supersport s karbonovým monokokem, na jehož konstrukci se podílela Dallara. Řízení bez posilovače a syrový zvuk turba – čistá analogová radost z jízdy. Ve zručných rukou a na klikaté silnici porazí i silnější soupeře." },
+  { id: "alfa-giulia", name: "Alfa Romeo Giulia Quadrifoglio", body: "čtyřdveřový sedan", engine: "2,9 l V6 biturbo", hp: 510, drive: "zadní", acc: "3,9", top: 307,
+    d: "Elegantní sedan se čtyřlístkem, který výkony patří mezi supersporty. Nadčasový italský design, prostor a pohodlí – praktičnost i emoce v jednom." },
+  { id: "aston-vantage", name: "Aston Martin Vantage Roadster", body: "dvoumístný roadster", engine: "4,0 l V8 biturbo", hp: 510, drive: "zadní", acc: "3,7", top: 306, open: 1,
+    d: "Gentlemanský Brit s motorem AMG, drsným zvukem a hliníkovou karoserií vyváženou 50/50. Plátěná střecha se složí za 6,7 s – světový rekord." },
+  { id: "audi-r8", name: "Audi R8 V10 Performance Spyder", body: "dvoumístný spyder", engine: "5,2 l V10 atmosférický", hp: 620, drive: "všech kol (quattro)", acc: "3,1", top: 331, open: 1,
+    d: "Atmosférický V10, který se vytáčí s mechanickou zuřivostí, a quattro, které přenese výkon s chirurgickou přesností. Se staženou střechou je každý tunel koncertní síň." },
+  { id: "corvette-c8", name: "Chevrolet Corvette C8 Convertible", body: "dvoumístný kabriolet", engine: "6,2 l V8 atmosférický", hp: 495, drive: "zadní", acc: "2,9", top: 312, open: 1,
+    d: "První Corvette s motorem uprostřed – technologicky nejvyspělejší generace, která se vyrovná evropským supersportům. Duch Ameriky žije v atmosférickém osmiválci." },
+  { id: "ferrari-f8", name: "Ferrari F8 Spider", body: "dvoumístný spider", engine: "3,9 l V8 biturbo", hp: 720, drive: "zadní", acc: "2,9", top: 340, open: 1,
+    d: "Pokračovatel dynastie osmiválců z Maranella: 0–200 km/h za zhruba 8 s, pokročilá aerodynamika a okamžitá odezva. Pravé italské drama na čtyřech kolech." },
+  { id: "ferrari-sf90", name: "Ferrari SF90 Spider", body: "dvoumístný spider", engine: "4,0 l V8 biturbo + 3 elektromotory", hp: 1000, drive: "všech kol", acc: "2,5", top: 340, open: 1,
+    d: "Plug-in hybrid s celkovým výkonem 1 000 koní. Zrychlení vás zatlačí do sedadla, se staženou střechou je z každé jízdy malé představení." },
+  { id: "lamborghini-huracan", name: "Lamborghini Huracán EVO Spyder", body: "dvoumístný spyder", engine: "5,2 l V10 atmosférický", hp: 640, drive: "všech kol", acc: "3,1", top: 325, open: 1,
+    d: "Jedna z posledních bašt hlasitého desetiválce. Náš vůz v laku Oro Bacchus s hnědou plátěnou střechou a karbonovými sedadly v Alcantaře." },
+  { id: "lotus-emira", name: "Lotus Emira", body: "dvoumístné kupé", engine: "2,0 l R4 turbo (AMG)", hp: 360, drive: "zadní", acc: "4,5", top: 283,
+    d: "Poslední Lotus se spalovacím motorem. Praktičtější než předchůdci, ale řízení zůstalo fantastické – a na ulici si ho spletete s Ferrari." },
+  { id: "maserati-mc20", name: "Maserati MC20", body: "dvoumístné kupé", engine: "3,0 l V6 biturbo Nettuno", hp: 630, drive: "zadní", acc: "2,9", top: 325,
+    d: "Supersport z Modeny vyvinutý od nuly, s motorem Nettuno a technologiemi z formule 1. Nůžkové dveře a futuristické linie." },
+  { id: "porsche-gt3", name: "Porsche 911 GT3", body: "dvoumístné kupé", engine: "4,0 l B6 atmosférický", hp: 510, drive: "zadní", acc: "3,4", top: 320,
+    d: "Atmosférický boxer z GT3 Cup točí 9 000 ot./min. Náš vůz má PDK a paket Clubsport s ochranným rámem a karbonovými skořepinami. Nürburgring za 6:55." },
+  { id: "porsche-boxster", name: "Porsche Boxster S (981)", body: "dvoumístný roadster", engine: "3,5 l B6 atmosférický", hp: 315, drive: "zadní", acc: "4,8", top: 277, open: 1,
+    d: "Přesný, přirozený a vyvážený roadster. Plochý šestiválec za zády zpívá čistě mechanicky – auto, které si za slunečného dne vyberete raději než cokoli jiného." }
+];
+
+const CONTACTS = [
+  { name: "Michal Novotný", role: "Koordinátor IC (mluví česky)", tel: "+420 724 639 522" },
+  { name: "Julie de Voto", role: "Hostitelka · průvodkyně a sommeliérka (EN/IT)", tel: "+39 334 319 7638" },
+  { name: "Michal Kozinski", role: "Jízdy", tel: "+48 517 074 447" },
+  { name: "Marcin Drazan", role: "Péče o hosty", tel: "+48 504 522 339" }
+];
+
+const CHECKLIST = [
+  ["passport", "Cestovní pas nebo občanský průkaz"],
+  ["licence", "Platný řidičský průkaz ve fyzické podobě (elektronický se nepřijímá)"],
+  ["declaration", "Prohlášení řidiče podepsané v aplikaci (spoluúčast až 12 000 EUR)"],
+  ["whatsapp", "Připojeno do skupiny ve WhatsAppu (komunikace anglicky)"],
+  ["diet", "Dietní omezení / vegetariánské menu nahlášeno koordinátorovi"],
+  ["cap", "Čepice a šátek na krk do kabrioletů"],
+  ["shoes", "Pohodlná obuv s plochou podrážkou na řízení"],
+  ["layers", "Vrstvy: chladná rána a večery, horké poledne, vítr a déšť"],
+  ["evening", "Něco elegantnějšího na večeře ve vile"],
+  ["swim", "Plavky (bazén není vyhřívaný)"],
+  ["pills", "Lék proti cestovní nevolnosti (klikaté silnice)"],
+  ["card", "Karta/hotovost na bary, outlet a vlastní objednávky ve vile"]
+];
+
+/* Mapa – přibližné souřadnice (lat, lon). Poloha vily je orientační. */
+const PLACES = [
+  { id: "villa", name: "Villa Boscarello", lat: 43.208, lon: 11.628, cls: "home", days: ["d0","d1","d2","d3"], q: VILLA_Q, when: "zázemí akce",
+    note: "Vila ze 17. století na kopci s cypřišovou alejí, mezi Ascianem a Trequandou. Poloha na mapě je přibližná." },
+  { id: "monteriggioni", name: "Monteriggioni", off: 1, cls: "stop", days: ["d0"], q: "Monteriggioni", when: "8. 10. cca 12:40", note: "Středověká pevnost, zastávka při transferu z letiště." },
+  { id: "pulcianese", mk: "1", name: "Agriturismo Pulcianese", lat: 43.170, lon: 11.505, cls: "stop", days: ["d1"], q: "Agriturismo Pulcianese", when: "9. 10. 09:50", note: "Káva a první výměna vozů. Poloha na mapě je odhad." },
+  { id: "cantina", mk: "2", name: "Cantina di Montalcino", lat: 43.064, lon: 11.508, cls: "stop", days: ["d1"], q: "Cantina di Montalcino", when: "9. 10. 10:50", note: "Prohlídka vinařství, Brunello." },
+  { id: "bagno", mk: "3", name: "Bagno Vignoni", lat: 43.0275, lon: 11.617, cls: "stop", days: ["d1"], q: "Bagno Vignoni", when: "9. 10. 13:00", note: "Termální nádrž a procházka." },
+  { id: "fattoria", mk: "F", name: "Fattoria del Colle", lat: 43.176, lon: 11.659, cls: "stop", days: ["d1"], q: "Fattoria del Colle Trequanda", when: "9. 10. 17:15", note: "Olivový olej a víno, 6 km autobusem." },
+  { id: "sangiovanni", mk: "P", name: "San Giovanni d’Asso", lat: 43.153, lon: 11.589, cls: "stop", days: ["d2"], q: "San Giovanni d'Asso", when: "10. 10. 09:15", note: "Tankování, posádky zůstávají ve vozech." },
+  { id: "mulino", mk: "1", name: "Mulino Val d’Orcia", lat: 43.066, lon: 11.622, cls: "stop", days: ["d2"], q: "Mulino Val d'Orcia", when: "10. 10. 09:50", note: "Káva a crostata u San Quirico d’Orcia." },
+  { id: "montepulciano", mk: "2", name: "Montepulciano", lat: 43.093, lon: 11.781, cls: "stop", days: ["d2"], q: "Montepulciano", when: "10. 10. 11:00", note: "Město, sklepy Talosa, vyhlídka." },
+  { id: "asciano", mk: "3", name: "Asciano", lat: 43.234, lon: 11.561, cls: "stop", days: ["d2"], q: "Asciano", when: "10. 10. 13:30", note: "Bar u Marca, uzeniny a sýry." },
+  { id: "mall", name: "The Mall Firenze", off: 1, cls: "stop", days: ["d3"], q: "The Mall Firenze Leccio", when: "11. 10. cca 12:45", note: "Outlet v Lecciu, cca 3 h." },
+  { id: "airport", name: "Letiště Florencie", off: 1, cls: "stop", days: ["d0","d3"], q: "Aeroporto di Firenze Peretola", when: "přílet 10:45 · odlet 18:45", note: "Setkání s hostitelkou v příletové hale." },
+  // orientační body bez zastávky
+  { id: "buonconvento", name: "Buonconvento", lat: 43.1335, lon: 11.483, cls: "ref", dx: 7, dy: 4 },
+  { id: "montalcino", name: "Montalcino", lat: 43.058, lon: 11.489, cls: "ref", dx: -7, dy: 4, anchor: "end" },
+  { id: "oliveto", name: "Monte Oliveto", lat: 43.1755, lon: 11.544, cls: "ref", dx: 7, dy: -5 },
+  { id: "sanquirico", name: "San Quirico", lat: 43.058, lon: 11.605, cls: "ref", dx: -7, dy: 13, anchor: "end" },
+  { id: "pienza", name: "Pienza", lat: 43.077, lon: 11.679, cls: "ref", dx: 7, dy: 12 },
+  { id: "sinalunga", name: "Sinalunga", lat: 43.213, lon: 11.737, cls: "ref", dx: 7, dy: -5 },
+  { id: "trequanda", name: "Trequanda", lat: 43.188, lon: 11.668, cls: "ref", dx: 7, dy: -4 }
+];
+const ROUTES = {
+  d0: [[43.45, 11.215], [43.3897, 11.2233], [43.33, 11.33], [43.27, 11.46], [43.234, 11.561], [43.208, 11.628]],
+  d1: [[43.208, 11.628], [43.19, 11.56], [43.170, 11.505], [43.1335, 11.483], [43.064, 11.508], [43.0, 11.52], [42.985, 11.575], [43.0275, 11.617], [43.058, 11.605], [43.12, 11.57], [43.1755, 11.544], [43.208, 11.628]],
+  d2: [[43.208, 11.628], [43.153, 11.589], [43.066, 11.622], [43.077, 11.679], [43.09, 11.77], [43.093, 11.781], [43.16, 11.765], [43.213, 11.737], [43.225, 11.66], [43.234, 11.561], [43.285, 11.43], [43.234, 11.561], [43.208, 11.628]],
+  d3: [[43.208, 11.628], [43.234, 11.561], [43.30, 11.45], [43.45, 11.42]]
+};
+
+/* =====================================================================
+   STATE & HELPERS
+   ===================================================================== */
+const store = {
+  get(k, def) { try { const v = localStorage.getItem("tos26:" + k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem("tos26:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ico = (n, cls = "ico") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const at = (date, hm) => new Date(`${date}T${hm}:00${OFFSET}`);
+const dayById = id => DAYS.find(d => d.id === id);
+const mapsUrl = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); // 1 000
+
+function now() {
+  const sim = store.get("sim", null);
+  return sim ? new Date(sim + ":00" + OFFSET) : new Date();
+}
+const weekday = date => new Intl.DateTimeFormat("cs-CZ", { weekday: "long", timeZone: "Europe/Rome" }).format(at(date, "12:00"));
+const dmy = date => { const [y, m, d] = date.split("-"); return `${+d}. ${+m}.`; };
+
+// Doplní start/konec jako Date; chybějící konec = začátek dalšího bodu téhož dne.
+const EVENTS = ITEMS.map((it, i) => ({ ...it, i })).map(it => {
+  const day = dayById(it.d);
+  const start = at(day.date, it.s);
+  let end;
+  if (it.e) end = at(day.date, it.e);
+  else {
+    const nxt = ITEMS.slice(it.i + 1).find(x => x.d === it.d && x.s > it.s);
+    end = nxt ? at(day.date, nxt.s) : new Date(start.getTime() + 30 * 60000);
+  }
+  return { ...it, start, end, date: day.date };
+});
+const TRIP_START = EVENTS[0].start, TRIP_END = EVENTS[EVENTS.length - 1].end;
+
+function currentState(t) {
+  const active = EVENTS.filter(e => e.start <= t && t < e.end);
+  const cur = active.length ? active.reduce((a, b) => (b.start >= a.start ? b : a)) : null;
+  const next = EVENTS.find(e => e.start > t && (!cur || e !== cur));
+  return { cur, next };
+}
+function untilText(ms) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+  if (d > 0) return `${d} d ${h} h`;
+  if (h > 0) return `${h} h ${mm} min`;
+  return `${mm} min`;
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t); setTimeout(() => t.remove(), 1800);
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast("Zkopírováno"); }
+  catch (e) { toast(text); }
+}
+
+/* ---------- weather (Open-Meteo, cache v localStorage) ---------- */
+const WX_CODES = [
+  [[0], "sun", "jasno"], [[1, 2], "psun", "polojasno"], [[3], "cloud", "zataženo"], [[45, 48], "fog", "mlha"],
+  [[51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82], "rain", "déšť"], [[95, 96, 99], "storm", "bouřky"], [[71, 73, 75, 77, 85, 86], "cloud", "sníh"]
+];
+const wxInfo = c => { const f = WX_CODES.find(w => w[0].includes(c)); return f ? { i: f[1], l: f[2] } : { i: "cloud", l: "" }; };
+let WX = store.get("wx", null);
+async function loadWeather() {
+  if (WX && Date.now() - WX.at < 3 * 3600e3) return;
+  try {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=43.21&longitude=11.63&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code&timezone=Europe%2FRome&start_date=2026-10-08&end_date=2026-10-11";
+    const r = await fetch(url);
+    if (!r.ok) return;
+    const j = await r.json();
+    WX = { at: Date.now(), daily: j.daily, current: j.current };
+    store.set("wx", WX);
+    render();
+  } catch (e) { /* offline – zůstane poslední uložená předpověď */ }
+}
+function wxFor(date) {
+  if (!WX || !WX.daily) return null;
+  const i = WX.daily.time.indexOf(date);
+  if (i < 0) return null;
+  return { code: WX.daily.weather_code[i], max: Math.round(WX.daily.temperature_2m_max[i]), min: Math.round(WX.daily.temperature_2m_min[i]), p: WX.daily.precipitation_probability_max[i] };
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+let TAB = "ted";
+let PROGRAM_DAY = null;
+let MAP_DAY = "all";
+let MAP_SEL = "villa";
+
+function tags(it) {
+  return (it.tags || []).map(([c, l]) => `<span class="pill ${c}">${esc(l)}</span>`).join("");
+}
+function menuHtml(key) {
+  const m = MENUS[key]; if (!m) return "";
+  const veg = store.get("veg", false) && m.veg;
+  const list = veg ? m.veg : m.std;
+  return `<div class="menu"><div class="mt">${esc(m.title)}${veg ? " · vegetariánské" : ""}</div><ul>${list.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+
+function renderTed() {
+  const t = now();
+  const { cur, next } = currentState(t);
+  let main = "", nextHtml = "", strip = "";
+  if (t < TRIP_START) {
+    main = `<div class="status-label"><span class="eyebrow">Do odletu zbývá</span></div>
+      <div class="big-count tnum">${untilText(TRIP_START - t).replace(/(\d+) (d|h|min)/g, "$1<small>$2</small>")}</div>
+      <p class="muted">${weekday(DAYS[0].date)} 8. 10. · let Praha → Florencie v 09:10</p>`;
+    const done = CHECKLIST.filter(([k]) => store.get("chk", {})[k]).length;
+    strip = `<a class="note-strip" href="#info-pred" style="text-decoration:none">${ico("list")}<span>Seznam věcí: <b>${done} / ${CHECKLIST.length}</b> připraveno. Nezapomeňte fyzický řidičák!</span></a>`;
+  } else if (t >= TRIP_END) {
+    const driven = Object.values(store.get("driven", {})).filter(Boolean).length;
+    main = `<div class="status-label"><span class="eyebrow">Arrivederci</span></div>
+      <h2>Grazie, Toscana!</h2>
+      <p class="muted">Vyzkoušeli jste ${driven} ${driven === 1 ? "vůz" : driven >= 2 && driven <= 4 ? "vozy" : "vozů"}. Doma vás čeká dárkový box „Chutě Toskánska“.</p>`;
+  } else if (cur) {
+    const pct = Math.min(100, Math.max(0, (t - cur.start) / (cur.end - cur.start) * 100));
+    main = `<div class="status-label"><span class="live-dot"></span><span class="eyebrow">Právě teď · ${esc(cur.disp || cur.s)}${cur.e ? "–" + cur.e : ""}</span></div>
+      <h2>${esc(cur.t)}</h2>
+      ${cur.p ? `<div class="where">${ico("pin")}<span>${esc(cur.p)}</span></div>` : ""}
+      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap">${tags(cur)}</div>
+      <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+      ${cur.n ? `<p>${esc(cur.n)}</p>` : ""}
+      ${cur.menu ? menuHtml(cur.menu) : ""}
+      ${cur.q ? `<div class="btnrow"><a class="linkbtn" href="${mapsUrl(cur.q)}" target="_blank" rel="noopener">${ico("map")}Navigovat</a></div>` : ""}`;
+  } else {
+    main = `<div class="status-label"><span class="eyebrow">Teď</span></div>
+      <h2>${next && next.date === localDate(t) ? "Chvíle volna" : "Dobrou noc"}</h2>
+      <p class="muted">${next ? "Další bod programu je za " + untilText(next.start - t) + "." : ""}</p>`;
+  }
+  if (next && t < TRIP_END) {
+    nextHtml = `<div class="status-next">${ico(next.k)}<span class="t">${esc(next.disp || next.s)}</span><span>${esc(next.t)}</span><span class="in">za ${untilText(next.start - t)}</span></div>`;
+  }
+  // ride day group reminder
+  const today = DAYS.find(d => d.date === localDate(t));
+  const groups = store.get("groups", {});
+  if (today && (today.id === "d1" || today.id === "d2") && t < at(today.date, "15:00")) {
+    const g = groups[today.id];
+    strip = `<div class="note-strip">${ico("car")}<span>${g ? `Dnes jedete ve <b>${GROUP_LOC[g]}</b> skupině. ` : ""}Řidičák v kapse, čepice do kabria, dechová zkouška jen 0,0 ‰.</span></div>`;
+  }
+
+  // today list
+  let todayHtml = "";
+  const listDay = today || (t < TRIP_START ? DAYS[0] : null);
+  if (listDay) {
+    const evs = EVENTS.filter(e => e.d === listDay.id);
+    todayHtml = `<section class="block"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <h2 class="section-title">${today ? "Dnes" : "První den"} · ${esc(listDay.short)}</h2>
+      <a href="#program" data-day="${listDay.id}" class="small">Celý den</a></div>
+      <ul class="list">${evs.map(e => `<li class="${e.end <= t ? "past" : ""}"><span class="t">${esc(e.disp || e.s)}</span>
+        <span class="grow"><div>${esc(e.t)}</div>${e.p ? `<div class="sub">${esc(e.p)}</div>` : ""}</span></li>`).join("")}</ul></section>`;
+  }
+
+  // weather
+  const wxHtml = DAYS.map(d => {
+    const w = wxFor(d.date);
+    if (!w) return `<div><span class="d">${dmy(d.date)}</span>${ico("cloud")}<span class="pp">předpověď<br>zatím není</span></div>`;
+    const wi = wxInfo(w.code);
+    return `<div><span class="d">${weekday(d.date).slice(0, 2)} ${dmy(d.date)}</span>${ico(wi.i)}<span class="tt">${w.max}° / ${w.min}°</span><span class="pp">${w.p != null ? "srážky " + w.p + " %" : wi.l}</span></div>`;
+  }).join("");
+
+  return `
+  <section class="hero">
+    <img src="img/hero.jpg" alt="Silnice s cypřiši v toskánských kopcích">
+    <div class="hero-body">
+      <span class="kicker">Moto Premium d’Italia</span>
+      <h1>Toskánsko 2026</h1>
+      <span class="dates">8.–11. října · Villa Boscarello, Crete Senesi</span>
+    </div>
+  </section>
+  <section class="status" aria-live="polite">
+    <div class="status-main">${main}</div>
+    ${strip}
+    ${nextHtml}
+  </section>
+  ${todayHtml}
+  <section class="block flat">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 class="section-title">Počasí u vily</h2><span class="small muted">${WX ? "aktualizováno " + new Date(WX.at).toLocaleString("cs-CZ", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" }) : "načte se online"}</span></div>
+    <div class="wx">${wxHtml}</div>
+  </section>
+  <section class="block">
+    <h2 class="section-title">Rychlý kontakt</h2>
+    ${CONTACTS.slice(0, 2).map(contactHtml).join("")}
+    <a href="#info-kontakty" class="small">Všechny kontakty</a>
+  </section>`;
+}
+const GROUP_NAMES = { y: "žlutá", g: "zelená", r: "červená" };
+const GROUP_LOC = { y: "žluté", g: "zelené", r: "červené" };
+const GROUP_VARS = { y: "--g-yellow", g: "--g-green", r: "--g-red" };
+function localDate(t) { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome" }).format(t); }
+
+function contactHtml(c) {
+  const raw = c.tel.replace(/\s/g, "");
+  return `<div class="contact"><div class="who"><span class="name">${esc(c.name)}</span><span class="num">${esc(c.tel)}</span></div>
+    <span class="role">${esc(c.role)}</span>
+    <div class="btnrow"><a class="linkbtn primary" href="tel:${raw}">${ico("phone")}Volat</a>
+    <a class="linkbtn" href="https://wa.me/${raw.replace("+", "")}" target="_blank" rel="noopener">${ico("chat")}WhatsApp</a>
+    <button class="linkbtn" data-copy="${esc(c.tel)}" aria-label="Kopírovat číslo">${ico("copy")}</button></div></div>`;
+}
+
+function renderProgram() {
+  const t = now();
+  if (!PROGRAM_DAY) {
+    const today = DAYS.find(d => d.date === localDate(t));
+    PROGRAM_DAY = today ? today.id : (t >= TRIP_END ? "d3" : "d0");
+  }
+  const day = dayById(PROGRAM_DAY);
+  const evs = EVENTS.filter(e => e.d === day.id);
+  const { cur } = currentState(t);
+  const w = wxFor(day.date);
+  const notes = store.get("notes", {});
+  const chips = DAYS.map(d => `<button class="chip" data-pday="${d.id}" aria-pressed="${d.id === day.id}">${esc(d.short)} <small>${dmy(d.date)}</small></button>`).join("");
+  const tl = evs.map(e => {
+    const isNow = cur && cur.i === e.i, past = e.end <= t;
+    const hasMore = e.x || e.img || e.menu || e.q;
+    const head = `<div class="sumrow"><div style="min-width:0"><h3>${e.stop && (day.id === "d1" || day.id === "d2") && e.s < "15:00" ? `<span class="stopno">Zastávka ${e.stop} · </span>` : ""}${esc(e.t)}</h3>
+      ${e.p ? `<div class="place">${esc(e.p)}</div>` : ""}</div>${hasMore ? ico("chev", "ico chev") : ""}</div>
+      ${e.tags ? `<div class="row">${tags(e)}</div>` : ""}
+      ${e.n ? `<p class="small">${esc(e.n)}</p>` : ""}`;
+    const more = hasMore ? `<div class="more">
+      ${e.img ? `<img src="${e.img}" alt="${esc(e.t)}" loading="lazy">` : ""}
+      ${e.x ? `<p>${esc(e.x)}</p>` : ""}
+      ${e.menu ? menuHtml(e.menu) : ""}
+      ${e.q ? `<div class="btnrow"><a class="linkbtn" href="${mapsUrl(e.q)}" target="_blank" rel="noopener">${ico("map")}Otevřít v Mapách</a></div>` : ""}
+    </div>` : "";
+    const card = hasMore ? `<details class="card"${isNow ? " open" : ""}><summary>${head}</summary>${more}</details>` : `<div class="card"><div class="head">${head}</div></div>`;
+    return `<li class="tl${e.stop ? " stop" : ""}${isNow ? " now" : past ? " past" : ""}" id="ev-${e.i}">
+      <div class="time">${esc(e.disp || e.s)}${e.e && !e.disp && e.e !== "23:59" ? `<small>–${e.e}</small>` : ""}</div>
+      <div class="node">${ico(e.k)}</div>
+      <div class="body">${card}</div></li>`;
+  }).join("");
+  return `
+  <header class="topbar"><h1>Program</h1><span class="meta">${weekday(day.date)} ${dmy(day.date)}</span></header>
+  <div class="chips" role="group" aria-label="Den">${chips}</div>
+  <section class="dayhead"><img src="${day.img}" alt="">
+    <div><span class="eyebrow" style="color:inherit;opacity:.85">${weekday(day.date)} ${dmy(day.date)} 2026</span><h2>${esc(day.title)}</h2><span class="sub">${esc(day.sub)}</span></div></section>
+  <div class="stats">${day.stats.map(([b, s]) => `<div class="stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("")}
+    ${w ? `<div class="stat"><b>${w.max}° / ${w.min}°</b><span>${wxInfo(w.code).l}${w.p != null ? ", srážky " + w.p + " %" : ""}</span></div>` : ""}</div>
+  ${day.highlights ? `<section class="block"><span class="eyebrow">Co vás na trase čeká</span><ul class="rules">${day.highlights.map(h => `<li>${esc(h)}</li>`).join("")}</ul>
+    <p class="small muted">Při velkém zpoždění odjezdu se trasa zkracuje a některé zastávky odpadnou. Pořadatel má i náhradní trasy pro případ uzavírek.</p></section>` : ""}
+  <ol class="timeline">${tl}</ol>
+  <section class="block"><label for="note-${day.id}" class="eyebrow">Moje poznámky k tomuto dni</label>
+    <textarea id="note-${day.id}" data-note="${day.id}" placeholder="Nejlepší zatáčka, víno, které si chci koupit, kdo seděl vedle mě…">${esc(notes[day.id] || "")}</textarea>
+    <span class="small muted">Ukládá se jen v tomto telefonu.</span></section>`;
+}
+
+function renderMap() {
+  const W = 360, pad = 12;
+  const lat0 = 43.30, lat1 = 42.96, lon0 = 11.40, lon1 = 11.86;
+  const kx = 81.0, ky = 111.2; // km na stupeň
+  const scale = (W - 2 * pad) / ((lon1 - lon0) * kx);
+  const H = Math.round((lat0 - lat1) * ky * scale + 2 * pad);
+  const X = lon => pad + (lon - lon0) * kx * scale, Y = lat => pad + (lat0 - lat) * ky * scale;
+  const vis = d => MAP_DAY === "all" || MAP_DAY === d;
+  const dayOf = p => p.days && p.days.length === 1 ? p.days[0] : "";
+  const routes = Object.entries(ROUTES).map(([d, pts]) =>
+    `<polyline class="route ${d}${vis(d) ? "" : " dim"}" points="${pts.map(([la, lo]) => X(lo).toFixed(1) + "," + Y(la).toFixed(1)).join(" ")}"/>`).join("");
+  const pts = PLACES.filter(p => !p.off).map(p => {
+    const x = X(p.lon).toFixed(1), y = Y(p.lat).toFixed(1);
+    if (p.cls === "ref") return `<g class="pt ref"><circle cx="${x}" cy="${y}" r="2.5"/><text x="${(+x + p.dx).toFixed(1)}" y="${(+y + p.dy).toFixed(1)}" text-anchor="${p.anchor || "start"}">${esc(p.name)}</text></g>`;
+    const on = p.cls === "home" || p.days.some(vis);
+    const inner = p.cls === "home"
+      ? `<circle cx="${x}" cy="${y}" r="8"/><text class="lbl" x="${+x + 12}" y="${+y + 4}">Villa</text>`
+      : `<circle cx="${x}" cy="${y}" r="9"/><text class="mk" x="${x}" y="${+y + 3.8}" text-anchor="middle">${p.mk}</text>`;
+    return `<g class="pt ${p.cls} ${dayOf(p)}${MAP_SEL === p.id ? " sel" : ""}${on ? "" : " dim"}" data-place="${p.id}" tabindex="0" role="button" aria-label="${esc(p.name)}">
+      <circle cx="${x}" cy="${y}" r="18" class="hit"/>${inner}</g>`;
+  }).join("");
+  let grid = "";
+  for (let lo = 11.45; lo < lon1; lo += 0.1) grid += `<line class="map-grid" x1="${X(lo).toFixed(1)}" x2="${X(lo).toFixed(1)}" y1="0" y2="${H}"/>`;
+  for (let la = 43.0; la < lat0; la += 0.1) grid += `<line class="map-grid" y1="${Y(la).toFixed(1)}" y2="${Y(la).toFixed(1)}" x1="0" x2="${W}"/>`;
+  const sb = 10 * scale;
+  const list = PLACES.filter(p => p.cls !== "ref" && (p.cls === "home" || p.days.some(vis)));
+  const chips = [["all", "Vše"], ["d0", "Příjezd"], ["d1", "Trasa 1"], ["d2", "Trasa 2"], ["d3", "Odjezd"]]
+    .map(([id, l]) => `<button class="chip" data-mday="${id}" aria-pressed="${MAP_DAY === id}">${l}</button>`).join("");
+  return `
+  <header class="topbar"><h1>Mapa</h1><span class="meta">Crete Senesi · Val d’Orcia</span></header>
+  <div class="chips" role="group" aria-label="Trasa">${chips}</div>
+  <section class="mapwrap">
+    <svg class="map" viewBox="0 0 ${W} ${H}" role="img" aria-label="Schematická mapa tras a zastávek">
+      <rect class="map-bg" x="0" y="0" width="${W}" height="${H}"/>
+      ${grid}
+      <text class="region" x="${X(11.43)}" y="${Y(43.215)}">Crete Senesi</text>
+      <text class="region" x="${X(11.47)}" y="${Y(42.985)}">Val d’Orcia</text>
+      <text class="region" x="${X(11.735)}" y="${Y(43.15)}">Val di Chiana</text>
+      ${routes}
+      ${pts}
+      <g class="map-ui"><path class="map-ui-line" d="M${pad + 20},${pad + 20} l-14,-14 m0,7 l0,-7 l7,0"/>
+        <text x="${pad + 26}" y="${pad + 8}">Siena, Monteriggioni, Florencie</text></g>
+      <g transform="translate(${W - pad - sb},${H - pad})"><path class="map-ui-line" d="M0,0 h${sb.toFixed(1)} M0,-4 v4 M${sb.toFixed(1)},-4 v4"/><text class="map-ui" x="${(sb / 2).toFixed(1)}" y="-6" text-anchor="middle">10 km</text></g>
+      <g transform="translate(${W - pad - 8},${pad + 18})"><path class="map-ui-line" d="M0,10 L0,-8 M-4,-3 L0,-8 L4,-3"/><text class="map-ui" x="0" y="22" text-anchor="middle">S</text></g>
+    </svg>
+    <div class="legend" style="padding:10px 14px;border-top:1px solid var(--line)"><span><i style="background:var(--route-1)"></i>Trasa 1 · 9. 10.</span><span><i style="background:var(--route-2)"></i>Trasa 2 · 10. 10.</span><span><i style="background:var(--muted)"></i>Autobus</span></div>
+  </section>
+  <section class="block" style="padding-block:6px">
+    <ul class="list places">${list.map(p => `<li class="${MAP_SEL === p.id ? "sel" : ""}" id="pl-${p.id}" data-place="${p.id}">
+      <span class="mkb ${p.cls} ${dayOf(p)}">${p.cls === "home" ? ico("home") : p.mk || ico("pin")}</span>
+      <span class="grow"><div><b>${esc(p.name)}</b>${p.off ? ` <span class="pill exc">mimo mapu</span>` : ""}</div><div class="sub">${esc(p.when || "")}${p.note ? " · " + esc(p.note) : ""}</div></span>
+      <a class="linkbtn" href="${mapsUrl(p.q)}" target="_blank" rel="noopener" aria-label="${esc(p.name)} v Mapách">${ico("map")}</a></li>`).join("")}</ul>
+  </section>
+  <p class="small muted">Schematická mapa funguje offline. Průběh tras je orientační – skupinu vede vodicí vůz, navigovat nemusíte. Tlačítko s mapou otevře Google Mapy (potřebuje internet).</p>`;
+}
+
+function renderCars() {
+  const driven = store.get("driven", {}), fav = store.get("fav", null), groups = store.get("groups", {});
+  const n = CARS.filter(c => driven[c.id]).length;
+  const C = 2 * Math.PI * 30, off = C * (1 - Math.min(n, 8) / 8);
+  const grpRow = (id, label) => `<div class="grp"><span>${label}</span>${Object.entries(GROUP_NAMES).map(([k, l]) =>
+    `<button class="swatch" data-grp="${id}" data-g="${k}" aria-pressed="${groups[id] === k}"><i style="background:var(${GROUP_VARS[k]})"></i>${l}</button>`).join("")}</div>`;
+  const cards = CARS.map(c => `<article class="car${driven[c.id] ? " driven" : ""}">
+    <div class="ph"><img src="img/cars/${c.id}.jpg" alt="${esc(c.name)}" loading="lazy">
+      <div class="flags">${c.open ? "<span>kabrio · čepice</span>" : ""}${fav === c.id ? "<span>můj favorit</span>" : ""}</div></div>
+    <div class="cb">
+      <h3>${esc(c.name)}</h3>
+      <div class="specs">
+        <div><b>${fmtNum(c.hp)}</b><span>koní</span></div>
+        <div><b>${c.acc} s</b><span>0–100 km/h</span></div>
+        <div><b>${c.top}</b><span>km/h max</span></div>
+      </div>
+      <dl class="dl small"><dt>Motor</dt><dd>${esc(c.engine)}</dd><dt>Pohon</dt><dd>${esc(c.drive)}</dd><dt>Karoserie</dt><dd>${esc(c.body)}</dd></dl>
+      <details><summary>O voze</summary><p>${esc(c.d)}</p></details>
+      <div class="acts">
+        <button class="toggle" data-drive="${c.id}" aria-pressed="${!!driven[c.id]}">${ico(driven[c.id] ? "check" : "car")}${driven[c.id] ? "Vyzkoušeno" : "Řídil/a jsem"}</button>
+        <button class="toggle fav" data-fav="${c.id}" aria-pressed="${fav === c.id}" aria-label="Můj favorit">${ico("star")}</button>
+      </div>
+    </div></article>`).join("");
+  return `
+  <header class="topbar"><h1>Vozy</h1><span class="meta">12 vozů · 3 skupiny</span></header>
+  <section class="block">
+    <div class="garage">
+      <svg class="ring" viewBox="0 0 76 76" aria-label="${n} z 8 vozů"><circle class="bgc" cx="38" cy="38" r="30"/>
+        <circle class="fgc" cx="38" cy="38" r="30" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 38 38)"/>
+        <text x="38" y="45" text-anchor="middle">${n}/8</text></svg>
+      <div style="display:grid;gap:4px;min-width:0"><h2 class="section-title">Moje garáž</h2>
+        <p class="small muted">Každý den jedna skupina 4 vozů, na každé zastávce výměna. Za dva dny 8 různých aut a zhruba 300 km.</p></div>
+    </div>
+    <div class="groups"><span class="eyebrow">Vylosovaná skupina vozů</span>${grpRow("d1", "9. 10.")}${grpRow("d2", "10. 10.")}
+      <span class="small muted">Losuje se při instruktáži řidičů v den příjezdu. Druhý den jedete jinou skupinu než první.</span></div>
+  </section>
+  <section class="cars">${cards}</section>
+  <p class="small muted">Flotila podle Informačního balíčku, popisy a technické údaje z Event Booku. Přidělení vozů do barevných skupin oznámí pořadatel.</p>`;
+}
+
+function renderInfo() {
+  const chk = store.get("chk", {});
+  const done = CHECKLIST.filter(([k]) => chk[k]).length;
+  const veg = store.get("veg", false);
+  const sim = store.get("sim", "");
+  const acc = (id, icon, title, inner, open) => `<details class="acc" id="info-${id}"${open ? " open" : ""}><summary>${ico(icon)}<h2>${title}</h2>${ico("chev", "ico chev")}</summary><div class="inner">${inner}</div></details>`;
+  return `
+  <header class="topbar"><h1>Info</h1><span class="meta">vše na jednom místě</span></header>
+  ${acc("kontakty", "phone", "Kontakty", `
+    ${CONTACTS.map(contactHtml).join("")}
+    <div class="callout"><b>Tísňová linka 112</b><span class="small">Funguje v celé EU, i bez SIM. Lékárničky jsou ve vile i v doprovodných vozech.</span></div>
+    <p class="small muted">Hlavní komunikační kanál je skupina ve WhatsAppu (anglicky) – sledujte ji kvůli změnám a připomínkám. Dotazy nejlépe osobně koordinátorovi.</p>`, location.hash === "#info-kontakty")}
+  ${acc("pred", "list", `Před odjezdem <span class="muted" style="font-size:15px">${done}/${CHECKLIST.length}</span>`, `
+    <ul class="check">${CHECKLIST.map(([k, l]) => `<li><label><input type="checkbox" id="chk-${k}" data-chk="${k}"${chk[k] ? " checked" : ""}><span>${esc(l)}</span></label></li>`).join("")}</ul>`, location.hash === "#info-pred")}
+  ${acc("ridici", "shield", "Pravidla pro řidiče", `
+    <div class="callout"><b>Dechová zkouška: jen 0,0 ‰</b><span class="small">Bezprostředně před každou jízdou. Jakákoli naměřená hodnota znamená, že ten den neřídíte, a zkoušku nelze téhož dne opakovat.</span></div>
+    <h3>Abyste mohli řídit</h3>
+    <ol class="rules"><li>Elektronicky podepsané prohlášení v aplikaci (spoluúčast až 12 000 EUR v případě škody).</li>
+      <li>Celá instruktáž řidičů v den příjezdu 19:00–20:00 – odchod před koncem = neúčast.</li>
+      <li>Dechová zkouška 0,0 před startem.</li>
+      <li>Platný fyzický řidičský průkaz.</li></ol>
+    <h3>Na trase</h3>
+    <ul class="rules"><li>12 posádek (řidič + spolujezdec podle pokojů), 3 skupiny po 4 vozech: žlutá, zelená, červená.</li>
+      <li>Řídit smí jen určený řidič – jinak se nevztahuje pojištění. Vystřídat se lze jen při plánované výměně vozů.</li>
+      <li>Skupina jede pohromadě za vodicím vozem, s rádiovým spojením. Zastaví-li jeden vůz, stojí všichni.</li>
+      <li>Poklidné vyhlídkové ježdění v běžném provozu, žádné sportovní prvky. Porušení předpisů = vyloučení z jízd.</li>
+      <li>Vozy nejsou k dispozici mimo plánované trasy a časy.</li>
+      <li>Kdo nechce jet, zůstane ve vile – oznamte to koordinátorovi před odjezdem. Během jízdy už účast ukončit nelze.</li></ul>`)}
+  ${acc("vila", "home", "Villa Boscarello", `
+    <div class="gallery"><img src="img/villa.jpg" alt="Villa Boscarello z výšky" loading="lazy"><img src="img/villa-pool.jpg" alt="Bazén s výhledem" loading="lazy"><img src="img/villa-interior.jpg" alt="Jídelna ve vile" loading="lazy"></div>
+    <div class="prose"><p>Historická vila ze 17. století na kopci mezi Ascianem a Trequandou, s příjezdovou cypřišovou alejí a výhledem až k sopce Monte Amiata. Vede ji rodina Pometti – vlastní vinice, olivové háje, lanýžová plantáž a řemeslné pivo. Natáčely se tu reklamy na Ferrari Purosangue a Pagani Utopia.</p>
+    <p>Pokoje nejsou „hotelové“: autentický, jednoduchý styl historického domu.</p></div>
+    <dl class="dl"><dt>Ubytování</dt><dd>od 16:30 v den příjezdu</dd><dt>Odhlášení</dt><dd>11. 10. do 10:00</dd><dt>Bazén</dt><dd>venkovní, nevyhřívaný</dd><dt>Klid</dt><dd>po 23:00 ztlumit hovor a hudbu</dd><dt>Účty</dt><dd>vlastní objednávky uhradit před odjezdem</dd></dl>
+    <div class="btnrow"><a class="linkbtn primary" href="${mapsUrl(VILLA_Q)}" target="_blank" rel="noopener">${ico("pin")}Vila v Mapách</a></div>`)}
+  ${acc("jidlo", "food", "Jídlo a pití", `
+    <div class="switch"><label for="veg">Zobrazovat vegetariánské menu</label><input type="checkbox" id="veg" data-veg${veg ? " checked" : ""}></div>
+    <p class="small muted">Vegetariánské menu je jen na vyžádání oznámené několik dní předem.</p>
+    ${["breakfast", "d0-dinner", "d1-lunch", "d1-dinner", "d2-lunch", "d2-dinner"].map(k => `<div><h3 style="margin-bottom:6px">${{ "breakfast": "Každé ráno", "d0-dinner": "8. 10. večeře", "d1-lunch": "9. 10. oběd", "d1-dinner": "9. 10. večeře", "d2-lunch": "10. 10. oběd", "d2-dinner": "10. 10. večeře" }[k]}</h3>${menuHtml(k)}</div>`).join("")}
+    <h3>Koutek s občerstvením</h3><p>V centrální místnosti vily po celou dobu: kávovar, voda, nealko, ovoce a lehké občerstvení. V ceně.</p>
+    <h3>Víno a lihoviny</h3><p>Víno k obědům a večeřím po jízdách. Pijte střídmě hlavně první dva večery. Druhý den po skončení jízd se víno podává ve větším množství a v salonu je bar s lihovinami (první porce v ceně). Další objednávky platíte přímo personálu vily.</p>`)}
+  ${acc("pruvodce", "book", "Průvodce Toskánskem", `
+    <h3>Vína</h3>
+    <dl class="glossary"><div><dt>Chianti / Chianti Classico</dt><dd>Suché Sangiovese s tóny třešní, bylin a kůže, s jemnou mineralitou. Classico má víc struktury a hloubky.</dd></div>
+      <div><dt>Brunello di Montalcino</dt><dd>Také Sangiovese, ale koncentrovanější a tmavší, s pevnou strukturou a dlouhým závěrem. Sběratelské víno – uvidíte ho ve sklepech 1. den.</dd></div>
+      <div><dt>Vino Nobile di Montepulciano</dt><dd>Kulatější a sametovější než Brunello, stále výrazně toskánsky suché. Sklepy Talosa 2. den.</dd></div>
+      <div><dt>Super Tuscans</dt><dd>Moderní vína mimo apelační pravidla, často z Cabernet Sauvignon, Merlotu nebo Syrahu.</dd></div>
+      <div><dt>Vin Santo</dt><dd>Sladké dezertní víno, do kterého se namáčejí mandlové sušenky cantucci.</dd></div></dl>
+    <h3>Na talíři</h3>
+    <dl class="glossary"><div><dt>Pane sciocco</dt><dd>Tradiční chléb bez soli – neutrální základ k olivovému oleji, sýru a uzeninám.</dd></div>
+      <div><dt>Cinta Senese</dt><dd>Strakaté místní plemeno prasat; dlouho zrající prosciutto ochutnáte hned první večer.</dd></div>
+      <div><dt>Olio nuovo</dt><dd>Čerstvě lisovaný olivový olej: intenzivně zelený, pikantní, jemně hořký. Říjen je jeho sezóna.</dd></div>
+      <div><dt>Pecorino di Pienza</dt><dd>Ovčí sýr z provincie Siena.</dd></div>
+      <div><dt>Finocchiona</dt><dd>Salám ochucený semínky fenyklu.</dd></div>
+      <div><dt>Chianina</dt><dd>Plemeno bílého skotu; z něj je bistecca alla fiorentina vážená na kilogramy – i tatarák a filet ve vile.</dd></div>
+      <div><dt>Ribollita, pappa al pomodoro, pici</dt><dd>Zeleninová polévka s chlebem, rajčatová kaše s chlebem a ručně válené tlusté špagety.</dd></div>
+      <div><dt>Crostata</dt><dd>Koláč s marmeládou – k ranní kávě v mlýně Val d’Orcia.</dd></div></dl>
+    <img src="img/wine.jpg" alt="Láhev toskánského vína ve sklepě" loading="lazy" style="border-radius:12px;aspect-ratio:16/9;object-fit:cover;width:100%">
+    <img src="img/crete.jpg" alt="Zvlněné kopce Crete Senesi v podzimním světle" loading="lazy" style="border-radius:12px;aspect-ratio:16/9;object-fit:cover;width:100%">
+    <h3>Krajina</h3>
+    <ul class="rules"><li><b>Crete Senesi</b> – světlé jílovité kopce zvlněné jako látka, kolem vily.</li>
+      <li><b>Val d’Orcia</b> (UNESCO) – široké údolí, městečka z cihel, bílé cesty mezi poli.</li>
+      <li><b>Chianti</b> – upravené vinice, vily a cypřišové aleje mezi Florencií a Sienou.</li>
+      <li>Na podzim se sklízí hrozny i olivy a lisy pracují naplno.</li></ul>
+    <img src="img/gladiator.jpg" alt="Polní cesta mezi zlatými poli u Sieny" loading="lazy" style="border-radius:12px;aspect-ratio:16/9;object-fit:cover;width:100%">
+    <h3>Toskánsko ve filmu</h3>
+    <ul class="rules"><li><b>Pod toskánským sluncem</b> – silnice u Pienzy a ulice Montepulciana (trasa 2).</li>
+      <li><b>Gladiátor</b> – zlatá pole a cesta přes kopce byly natáčeny poblíž Sieny.</li>
+      <li><b>Stealing Beauty</b> (Bertolucci) – intimní obraz toskánských usedlostí.</li>
+      <li><b>Twilight</b> – středověká Volterra; <b>Only You</b> – jízda autem kolem Sieny.</li></ul>
+    <img src="img/ferrari-sheep.jpg" alt="Červené Ferrari na silnici, v pozadí ovce" loading="lazy" style="border-radius:12px;aspect-ratio:16/9;object-fit:cover;width:100%">
+    <h3>Toskánsko a motorismus</h3>
+    <p>Mille Miglia (1927–1957) projížděla Sienou a Florencií po římské Via Cassia a stoupala k Radicofani; dnes jezdí Mille Miglia Storica přes Val d’Orcia, San Quirico a Buonconvento. Okruh Mugello patří Ferrari a hostil Velkou cenu Toskánska F1. Lancia Delta Integrale vítězila na šotolinách u Poggibonsi v Rallye San Remo. A z Pontedery pochází Vespa.</p>
+    <h3>Pár slov italsky</h3>
+    <div class="phrase"><b>Buongiorno / Buonasera</b><span>Dobrý den / Dobrý večer</span><b>Grazie mille</b><span>Moc děkuji</span><b>Un caffè, per favore</b><span>Espresso, prosím</span><b>Il conto, per favore</b><span>Účet, prosím</span><b>Salute!</b><span>Na zdraví!</span><b>Che bella vista!</b><span>To je krásný výhled!</span><b>Dov’è il bagno?</b><span>Kde je toaleta?</span><b>Quanto costa?</b><span>Kolik to stojí?</span></div>`)}
+  ${acc("dalsi", "camera", "Foto, zdraví a drobnosti", `
+    <p><b>Foto a video:</b> skupinu doprovází profesionální tým. Neupravené záběry se sdílejí denně, upravené přijdou později. Usmívejte se a mluvte do kamery!</p>
+    <p><b>Lékárnička:</b> ve vile i v doprovodných vozech – léky proti bolesti, alergii, zažívacím potížím a nevolnosti, dezinfekce, obvazy. Řekněte koordinátorovi.</p>
+    <p><b>Nevolnost:</b> trasy jsou klikaté a kopcovité. Spolujezdcům doporučujeme vzít lék před odjezdem.</p>
+    <p><b>Neúčast:</b> chcete-li vynechat nějakou aktivitu, dejte vědět předem koordinátorovi – volný čas pak strávíte ve vile.</p>
+    <p><b>Na památku:</b> po návratu dorazí dárkový box „Chutě Toskánska“ s místními produkty.</p>`)}
+  ${acc("nastaveni", "gear", "Aplikace a nastavení", `
+    <div class="install"><h3>Instalace na plochu</h3>
+      <p class="small"><b>iPhone (Safari):</b> Sdílet → Přidat na plochu. <b>Android (Chrome):</b> menu ⋮ → Instalovat aplikaci.</p>
+      <button class="linkbtn primary" id="installBtn" hidden>${ico("check")}Instalovat aplikaci</button>
+      <p class="small muted" id="offlineState">Kontroluji offline režim…</p></div>
+    <div><h3 style="margin-bottom:6px">Náhled programu v jiném čase</h3>
+      <p class="small muted" style="margin-bottom:8px">Vyzkoušejte si, co aplikace ukáže během cesty. Čas je italský.</p>
+      <input type="datetime-local" id="simInput" value="${esc(sim || "2026-10-09T10:55")}" min="2026-10-07T00:00" max="2026-10-12T23:59">
+      <div class="btnrow" style="margin-top:8px"><button class="linkbtn primary" id="simGo">Nastavit</button><button class="linkbtn" id="simOff">Skutečný čas</button></div></div>
+    <div><h3 style="margin-bottom:6px">Data v telefonu</h3>
+      <p class="small muted" style="margin-bottom:8px">Seznam věcí, garáž, skupiny a poznámky se ukládají jen v tomto zařízení.</p>
+      <button class="linkbtn" id="resetBtn" data-armed="0">Smazat moje data</button></div>`)}
+  <p class="foot">Sestaveno z Event Booku, Informačního balíčku a Info Sheetu 05 (CZ). Při změnách platí pokyny koordinátora a WhatsApp.<br>Užijte si to a buďte v bezpečí!</p>`;
+}
+
+function render() {
+  const app = $("#app");
+  const html = { ted: renderTed, program: renderProgram, mapa: renderMap, vozy: renderCars, info: renderInfo }[TAB]();
+  app.innerHTML = `<div class="view">${html}</div>`;
+  document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === TAB ? "page" : "false"));
+  const sim = store.get("sim", null), banner = $("#sim");
+  banner.hidden = !sim;
+  if (sim) banner.innerHTML = `Náhled: ${new Date(sim + ":00" + OFFSET).toLocaleString("cs-CZ", { timeZone: "Europe/Rome", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}<button id="simOff2">Zrušit</button>`;
+  if (TAB === "info") updateOfflineState();
+  if (installEvt) { const b = $("#installBtn"); if (b) b.hidden = false; }
+}
+
+/* ---------- routing & events ---------- */
+function route() {
+  const h = (location.hash || "#ted").slice(1);
+  const base = h.split("-")[0];
+  TAB = ["ted", "program", "mapa", "vozy", "info"].includes(base) ? base : "ted";
+  render();
+  if (h.includes("-")) { const el = document.getElementById(h); if (el) { el.open = true; el.scrollIntoView({ block: "start" }); } }
+  else window.scrollTo(0, 0);
+  if (TAB === "program") { const n = $(".tl.now"); if (n) n.scrollIntoView({ block: "center" }); }
+}
+window.addEventListener("hashchange", route);
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-pday],[data-mday],[data-place],[data-drive],[data-fav],[data-grp],[data-copy],[data-day],#simGo,#simOff,#simOff2,#resetBtn,#installBtn");
+  if (!el) return;
+  if (el.dataset.pday) { PROGRAM_DAY = el.dataset.pday; render(); return; }
+  if (el.dataset.mday) { MAP_DAY = el.dataset.mday; render(); return; }
+  if (el.dataset.place) { if (e.target.closest("a")) return; MAP_SEL = el.dataset.place; render(); const r = document.getElementById("pl-" + MAP_SEL); if (r && el.tagName !== "LI") r.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  if (el.dataset.day) { PROGRAM_DAY = el.dataset.day; return; } // hash link proceeds
+  if (el.dataset.drive) { const d = store.get("driven", {}); d[el.dataset.drive] = !d[el.dataset.drive]; store.set("driven", d); render(); return; }
+  if (el.dataset.fav) { const f = store.get("fav", null); store.set("fav", f === el.dataset.fav ? null : el.dataset.fav); render(); return; }
+  if (el.dataset.grp) { const g = store.get("groups", {}); g[el.dataset.grp] = g[el.dataset.grp] === el.dataset.g ? null : el.dataset.g; store.set("groups", g); render(); return; }
+  if (el.dataset.copy) { copy(el.dataset.copy); return; }
+  if (el.id === "simGo") { const v = $("#simInput").value; if (v) { store.set("sim", v.slice(0, 16)); location.hash = "#ted"; render(); } return; }
+  if (el.id === "simOff" || el.id === "simOff2") { store.set("sim", null); try { localStorage.removeItem("tos26:sim"); } catch (x) {} render(); return; }
+  if (el.id === "resetBtn") {
+    if (el.dataset.armed !== "1") { el.dataset.armed = "1"; el.textContent = "Opravdu smazat? Klepněte znovu"; return; }
+    ["chk", "driven", "fav", "groups", "notes", "veg", "sim"].forEach(k => { try { localStorage.removeItem("tos26:" + k); } catch (x) {} });
+    toast("Smazáno"); render(); return;
+  }
+  if (el.id === "installBtn" && installEvt) { installEvt.prompt(); installEvt = null; el.hidden = true; }
+});
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.dataset && e.target.dataset.place) { e.preventDefault(); MAP_SEL = e.target.dataset.place; render(); }
+});
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.chk) { const c = store.get("chk", {}); c[el.dataset.chk] = el.checked; store.set("chk", c);
+    const s = el.closest(".acc").querySelector("summary h2 .muted"); if (s) s.textContent = CHECKLIST.filter(([k]) => c[k]).length + "/" + CHECKLIST.length; }
+  if (el.hasAttribute("data-veg")) { store.set("veg", el.checked); render(); const a = $("#info-jidlo"); if (a) a.open = true; }
+});
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.note) { const n = store.get("notes", {}); n[el.dataset.note] = el.value; store.set("notes", n); }
+});
+
+/* ---------- PWA ---------- */
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; const b = $("#installBtn"); if (b) b.hidden = false; });
+function updateOfflineState() {
+  const el = $("#offlineState"); if (!el) return;
+  if (!("serviceWorker" in navigator)) { el.textContent = "Tento prohlížeč offline režim nepodporuje."; return; }
+  navigator.serviceWorker.getRegistration().then(r => {
+    el.textContent = r && r.active ? "Offline režim je aktivní – program, mapa, vozy i fotky fungují bez signálu." : "Offline režim se připravuje. Otevřete aplikaci jednou s internetem.";
+  }).catch(() => { el.textContent = "Offline režim zde není dostupný (otevřete nainstalovanou verzi)."; });
+}
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+
+/* ---------- start ---------- */
+route();
+loadWeather();
+setInterval(() => { if (TAB === "ted" && !document.activeElement.matches("textarea,input")) render(); }, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { loadWeather(); if (TAB !== "info") render(); } });
+</script>
+</body>
+</html>
